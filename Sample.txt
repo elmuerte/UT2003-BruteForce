@@ -1,19 +1,24 @@
 [BruteForce.BruteForce]
+code=function bool odd(int x;)
+code=var int y;
 code=begin
-code=	var int x;
-code=	var int y;
-code=	var string t;
-code=	x = x+1;
-code=	x = 1*2+3-(4/8+(2+x));
-code=	if (x > 1) then begin
-code=		y = x;
-code=		x = 5;
-code=	end
-code=	else y = x+(x*2);
-code=	while (y > 0) do begin
-code=		t = x+"->"+y;
-;code=		print(t);
-code=		y = y-1;
-code=		x = (x+y)/x;
-code=	end;
+code=  y = x/2*2;
+code=	 if (y==x) then result = true else result = false;
+code=end;
+code=
+code=var int x;
+code=var int y;
+code=var string t;
+code=x = -12;
+code=x = x+1;
+code=x = 1*2+3-(4/8+(2+x));
+code=if (x > 1) then begin
+code=	 y = x;
+code=	 x = 5;
 code=end
+code=else y = x+(x*2);
+code=while (y > 0) do begin
+code=	 t = x+"->"+y;
+code=	 y = y-1;
+code=	 if odd(x) then x = (x+y)/x else x = x-y;
+code=end;

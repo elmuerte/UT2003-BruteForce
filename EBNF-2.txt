@@ -3,16 +3,18 @@
                            elmuerte@drunksnipers.com
 
 
-PROGRAM               ::= BEGIN DECLARATIONS STATEMENTS END
-DECLARATIONS          ::= (DECLARATION SEMICOLON)+
-DECLARATION           ::= VAR TYPE LVALUE
+PROGRAM               ::= DECLARATIONS STATEMENTS
+DECLARATIONS          ::= ((DECLARATION|FUNCTION) SEMICOLON)*
+DECLARATION           ::= (VAR TYPE LVALUE)
 TYPE                  ::= INTEGER
                         | STRING
                         | FLOAT
                         | BOOLEAN
 LVALUE                ::= IDENTIFIER
 IDENTIFIER            ::= __implicit__
-STATEMENTS            ::= (STATEMENT SEMICOLON)+
+FUNCTION              ::= FUNC TYPE IDENTIFIER LBRACK ARGUMENTS RBRACK DECLARATIONS BEGIN STATEMENTS END
+ARGUMENTS             ::= (TYPE LVALUE SEMICOLON)*
+STATEMENTS            ::= (STATEMENT SEMICOLON)*
 STATEMENT             ::= ASSIGNMENT
                         | WHILEDO
                         | IFTHENELSE
@@ -46,6 +48,7 @@ INTEGER               ::= 'int'
 STRING                ::= 'string'
 FLOAT                 ::= 'float'
 BOOLEAN               ::= 'bool'
+FUNC                  ::= 'function'
 UNDERSCORE            ::= '_'
 BECOMES               ::= '='
 WHILE                 ::= 'while'

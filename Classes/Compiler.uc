@@ -12,6 +12,7 @@ const __INTEGER               = "int";
 const __STRING                = "string";
 const __FLOAT                 = "float";
 const __BOOLEAN               = "bool";
+const __FUNC                  = "function";
 const __UNDERSCORE            = "_";
 const __BECOMES               = "=";
 const __WHILE                 = "while";
@@ -63,19 +64,17 @@ function require(Tokenizer.tokenType token, optional string text)
 
 function _program()
 {
-  require(TT_Identifier, __BEGIN);
-  t.nextToken();
   _declarations();
   _statements();
-  require(TT_Identifier, __END);
-  t.nextToken();
+  require(TT_EOF);
 }
 
 function _declarations()
 {
-  while (has(TT_Identifier, __VAR))
+  while (has(TT_Identifier, __VAR) || has(TT_Identifier, __FUNC))
   {
-    _declaration();
+    if (has(TT_Identifier, __VAR)) _declaration();
+    else if (has(TT_Identifier, __FUNC)) _function();
     require(TT_Literal, __SEMICOLON);
     t.nextToken();
   }
@@ -90,7 +89,6 @@ function _declaration()
   require(TT_Identifier);
   did = t.tokenString();
   t.nextToken();
-  // FIXME: add AST node
 }
 
 function Scope.DeclarationType _type()
@@ -116,14 +114,49 @@ function Scope.DeclarationType _type()
     return DT_Bool;
   }
   else {
-    Warn("Unrecognised type:"@t.tokenString());
+    Warn("Unrecognised type:"@t.tokenString()@"@ "$t.currentLine()$","$t.currentPos());
     assert(false);
+  }
+}
+
+function _function()
+{
+  local Scope.DeclarationType dtype;
+  local string did;
+  t.nextToken(); // function
+  dtype = _type();
+  require(TT_Identifier);
+  did = t.tokenString();
+  t.nextToken();
+  require(TT_Literal, __LBRACK);
+  t.nextToken();
+  _arguments();
+  require(TT_Literal, __RBRACK);
+  t.nextToken();
+  _declarations();
+  require(TT_Identifier, __BEGIN);
+  t.nextToken();
+  _statements();
+  require(TT_Identifier, __END);
+  t.nextToken();
+}
+
+function _arguments()
+{
+  while (!has(TT_Literal, __RBRACK))
+  {
+    _type();
+    require(TT_Identifier);
+    // did
+    t.nextToken();
+    require(TT_Literal, __SEMICOLON);
+    t.nextToken();
   }
 }
 
 function _statements()
 {
-  while (!has(TT_Identifier, __END))
+  while (!(has(TT_Identifier, __END) || has(TT_EOF)))
   {
     _statement();
     require(TT_Literal, __SEMICOLON);
@@ -137,7 +170,7 @@ function _statement()
   else if (has(TT_Identifier, __IF)) _ifthenelse();
   else if (has(TT_Identifier)) _assignment();
   else {
-    Warn("Unrecognised statement:"@t.tokenString());
+    Warn("Unrecognised statement:"@t.tokenString()@"@ "$t.currentLine()$","$t.currentPos());
     assert(false);
   }
 }
@@ -255,6 +288,15 @@ function _operand()
   else if (has(TT_Identifier))
   {
     t.nextToken();
+    if (has(TT_Literal, __LBRACK)) // is function ??
+    {
+      t.nextToken();
+      while (!has(TT_Literal, __RBRACK))
+      {
+        _operand();
+      }
+      t.nextToken(); // __RBRACK
+    }
   }
   else if (has(TT_Integer))
   {
@@ -268,15 +310,15 @@ function _operand()
   {
     t.nextToken();
   }
-  else if (has(TT_Literal, "("))
+  else if (has(TT_Literal, __LBRACK))
   {
     t.nextToken();
     _expr();
-    require(TT_Literal, ")");
+    require(TT_Literal, __RBRACK);
     t.nextToken();
   }
   else {
-    Warn("Unexpected token:"@t.tokenString());
+    Warn("Unexpected token:"@t.tokenString()@"@ "$t.currentLine()$","$t.currentPos());
     assert(false);
   }
 }
