@@ -1,7 +1,7 @@
 /**
   The compiled code ready to be executed
 */
-class AST extends Object;
+class AST extends Object config(BruteForce);
 
 enum NodeType
 {
@@ -21,7 +21,7 @@ struct Node
   var int parent;
   var array<int> children;
 };
-var array<Node> Tree;
+var config array<Node> Tree;
 
 var private int currentNode;
 

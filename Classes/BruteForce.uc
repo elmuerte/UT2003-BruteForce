@@ -17,7 +17,10 @@ var array<string> Input;
 event int Main( string Parms )
 {
   local int n;
-  local bool showTree;
+  local bool showTree, saveTree, noCompile;
+  showTree = false;
+  saveTree = false;
+  noCompile = false;
   class'wString'.static.split2(Parms, " ", Input, true, "\"");
   for (n = input.length-1; n >= 0; n--)
   {
@@ -26,22 +29,34 @@ event int Main( string Parms )
       input.remove(n, 1);
       showTree = true;
     }
+    else if (input[n] ~= "-savetree")
+    {
+      input.remove(n, 1);
+      saveTree = true;
+    }
+    else if (input[n] ~= "-nocompile")
+    {
+      input.remove(n, 1);
+      noCompile = true;
+    }
   }
-  
-  t = new class'Tokenizer';
-  s = new class'Scope';
-  c = new class'Compiler';
+    
+  s = new class'Scope';  
   a = new class'AST';
   i = new class'Interpreter';
-
-  t.Create(Code);
-  a.Create();
-
-  StopWatch(false);
-  t.nextToken();
-  c.Compile(t, a);
-  Log("Compile time: ");
-  StopWatch(true);
+   
+  if (!noCompile)
+  {
+    t = new class'Tokenizer';
+    c = new class'Compiler';
+    t.Create(Code);
+    a.Create();
+    StopWatch(false);
+    t.nextToken();
+    c.Compile(t, a);
+    Log("Compile time: ");
+    StopWatch(true);
+  }
 
   if (showTree) a.printTree();
 
@@ -50,6 +65,8 @@ event int Main( string Parms )
   i.Execute();
   Log("Execution time: ");
   StopWatch(true);
+
+  if (saveTree) a.SaveConfig();
 
   return 0;
 }
