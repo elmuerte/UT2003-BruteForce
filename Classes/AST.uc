@@ -121,8 +121,8 @@ private function PrintSubTree(int root, int depth)
 {
   local int i;
   local string tmp;
-  for (i = 0; i < depth; i++) tmp = tmp$"--";
-  Log(tmp@Tree[root].value);
+  for (i = 0; i < depth; i++) tmp = tmp$"|   ";
+  Log(tmp$"+--"@Tree[root].value);
   for (i = 0; i < Tree[root].children.length; i++)
   {
     PrintSubTree(Tree[root].children[i], depth+1);

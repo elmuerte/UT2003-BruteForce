@@ -13,7 +13,6 @@ const __STRING                = "string";
 const __FLOAT                 = "float";
 const __BOOLEAN               = "bool";
 const __FUNC                  = "function";
-const __UNDERSCORE            = "_";
 const __BECOMES               = "=";
 const __WHILE                 = "while";
 const __DO                    = "do";
