@@ -24,7 +24,8 @@ IFTHENELSE            ::= IF EXPR THEN CODEBLOCK (ELSE CODEBLOCK)?
 EXPR                  ::= BOOLEX
 BOOLEX                ::= ACCUM ((LT|LE|GT|GE|EQ|NE) ACCUM)*
 ACCUM                 ::= MULT ((PLUS|MINUS) MULT)*
-MULT                  ::= OPERAND ((MULTIPLY|DIVIDE) OPERAND)*
+MULT                  ::= PREOP ((MULTIPLY|DIVIDE) PREOP)*
+PREOP                 ::= (MINUS|NOT)? OPERAND
 OPERAND               ::= IDENTIFIER
                         | INTVALUE
                         | FLOATVALUE
@@ -62,6 +63,7 @@ PLUS                  ::= '+'
 MINUS                 ::= '-'
 MULTIPLY              ::= '*'
 DIVIDE                ::= '/'
+NOT                   ::= '!'
 LBRACK                ::= '('
 RBRACK                ::= ')'
 TRUE                  ::= 'true'

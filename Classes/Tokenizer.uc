@@ -65,6 +65,22 @@ function tokenType nextToken()
   return _nextToken();
 }
 
+/**
+  return the current line number
+*/
+function int currentLine()
+{
+  return linenr;
+}
+
+/**
+  return the current position in the line
+*/
+function int currentPos()
+{
+  return pos;
+}
+
 /* Private functions */
 
 private function tokenType _nextToken()
@@ -86,8 +102,9 @@ private function tokenType _nextToken()
     endPos = pos;
     curTokenType = TT_Identifier;
   }
-  // number: (-)?[0-9]+(\.([0-9])+)?
-  else if (((c >= 48) && (c <= 57)) || (c == 45)) // -
+  // number: [0-9]+(\.([0-9])+)?
+  // no negative number
+  else if ((c >= 48) && (c <= 57)) 
   {
     pos++;
     c = _c();
@@ -139,7 +156,6 @@ private function tokenType _nextToken()
     curTokenType = TT_String;
   }
   // operator: [+-*/=><!]+
-  // literal
   else if ((c == 33) || (c == 42) || (c == 43) || (c == 45) || (c == 47) || (c == 60) || (c == 61) || (c == 62) || (c == 61))
   {
     pos++;
@@ -152,6 +168,7 @@ private function tokenType _nextToken()
     endPos = pos;
     curTokenType = TT_Operator;
   }
+  // literal
   else {
     pos++;
     endPos = pos;

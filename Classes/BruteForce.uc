@@ -7,6 +7,7 @@ class BruteForce extends Commandlet config(BruteForce) dependsOn(Tokenizer) depe
 
 var private Tokenizer t;
 var private Scope s;
+var private Compiler c;
 var config array<string> Code;
 var array<string> Input;
 
@@ -305,6 +306,13 @@ function Scope.Declaration _argc(Scope.DeclarationType resultType)
 event int Main( string Parms )
 {
   class'wString'.static.split2(Parms, " ", Input);
-  Parse();  
+  
+  t = new class'Tokenizer';
+  s = new class'Scope';
+  c = new class'Compiler';
+  t.Create(Code);
+  t.nextToken();
+  c.Compile(t);
+
   return 0;
 }

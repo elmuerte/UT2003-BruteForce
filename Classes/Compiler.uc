@@ -29,6 +29,7 @@ const __PLUS                  = "+";
 const __MINUS                 = "-";
 const __MULTIPLY              = "*";
 const __DIVIDE                = "/";
+const __NOT                   = "!";
 const __LBRACK                = "(";
 const __RBRACK                = ")";
 const __TRUE                  = "true";
@@ -36,6 +37,12 @@ const __FALSE                 = "false";
 // terminals -- end
 
 var private Tokenizer t;
+
+function Compile(Tokenizer tokenizer)
+{
+  t = tokenizer;
+  _program();
+}
 
 function bool has(Tokenizer.tokenType token, optional string text)
 {
@@ -45,7 +52,13 @@ function bool has(Tokenizer.tokenType token, optional string text)
 
 function require(Tokenizer.tokenType token, optional string text)
 {
-  assert(has(token, text));
+  local bool res;
+  res = has(token, text);
+  if (!res)
+  {
+    Warn("Expected ("$token$") \""$text$"\" but has ("$t.currentToken()$") \""$t.tokenString()$"\" @ "$t.currentLine()$","$t.currentPos());
+    assert(false);
+  }
 }
 
 function _program()
@@ -208,34 +221,52 @@ function _accum()
 
 function _mult()
 {
-  _operand();
+  _preop();
   while (has(TT_Operator, __MULTIPLY)||has(TT_Operator, __DIVIDE))
   {
     t.nextToken();
-    _operand();
+    _preop();
   }
+}
+
+function _preop()
+{
+  if (has(TT_Operator, __MINUS))
+  {
+    t.nextToken();
+  }
+  else if (has(TT_Operator, __NOT))
+  {
+    t.nextToken();
+  }
+  _operand();
 }
 
 function _operand()
 {
   if (has(TT_Identifier, __TRUE))
   {
+    t.nextToken();
   }
   else if (has(TT_Identifier, __FALSE))
   {
+    t.nextToken();
   }
   else if (has(TT_Identifier))
   {
-    // identifier
+    t.nextToken();
   }
   else if (has(TT_Integer))
   {
+    t.nextToken();
   }
   else if (has(TT_String))
   {
+    t.nextToken();
   }
   else if (has(TT_Float))
   {
+    t.nextToken();
   }
   else if (has(TT_Literal, "("))
   {
