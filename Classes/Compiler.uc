@@ -220,7 +220,7 @@ function _ifthenelse()
 
 function _assignment()
 {
-  a.AddRoot(NT_Keyword, "=");
+  a.AddRoot(NT_Keyword, __BECOMES);
   _lvalue();
   require(TT_Operator, __BECOMES);
   t.nextToken();
@@ -241,7 +241,9 @@ function _expr()
 }
 
 function _boolex()
-{
+{  
+  local int i;
+  i = 0;
   _accum();
   while (has(TT_Operator, __LT)||has(TT_Operator, __LE)||has(TT_Operator, __GT)||has(TT_Operator, __GE)||
     has(TT_Operator, __EQ)||has(TT_Operator, __NE))
@@ -250,25 +252,38 @@ function _boolex()
     a.SwitchNode();
     t.nextToken();
     _accum();
-    //a.CloseRoot();
+  }
+  while (i > 0) 
+  {
+    a.CloseRoot();
+    i--;
   }
 }
 
 function _accum()
 {
+  local int i;
+  i = 0;
   _mult();
   while (has(TT_Operator, __PLUS)||has(TT_Operator, __MINUS))
   {
     a.AddRoot(NT_Keyword, t.tokenString());
     a.SwitchNode();
+    i++;
     t.nextToken();
     _mult();
-    //a.CloseRoot();
+  }
+  while (i > 0) 
+  {
+    a.CloseRoot();
+    i--;
   }
 }
 
 function _mult()
 {
+  local int i;
+  i = 0;
   _preop();
   while (has(TT_Operator, __MULTIPLY)||has(TT_Operator, __DIVIDE))
   {
@@ -276,7 +291,11 @@ function _mult()
     a.SwitchNode();
     t.nextToken();
     _preop();
-    //a.CloseRoot();
+  }
+  while (i > 0) 
+  {
+    a.CloseRoot();
+    i--;
   }
 }
 
@@ -344,12 +363,12 @@ function _operand()
   }
   else if (has(TT_Literal, __LBRACK))
   {
-    a.AddRoot(NT_Keyword, __LBRACK);
+    //a.AddRoot(NT_Keyword, __LBRACK);
     t.nextToken();
     _expr();
     require(TT_Literal, __RBRACK);
     t.nextToken();
-    a.CloseRoot();
+    //a.CloseRoot();
   }
   else {
     Warn("Unexpected token:"@t.tokenString()@"@ "$t.currentLine()$","$t.currentPos());
