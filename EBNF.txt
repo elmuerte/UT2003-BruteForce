@@ -1,0 +1,44 @@
+BruteForce language
+by Michiel 'El Muerte' Hendriks
+elmuerte@drunksnipers.com
+
+
+PROGRAM         ::= DECLARATIONS STATEMENTS
+
+DECLARATIONS    ::= (DECLARATION SEMICOLON)+
+DECLARATION     ::= VAR TYPE LVALUE
+STATEMENTS      ::= (STATEMENT SEMICOLON)+
+STATEMENT       ::= ASSIGNMENT | IFTHENELSE
+ASSIGNMENT      ::= LVALUE BECOMES EXPR
+IFTHENELSE      ::= IF EXPR THEN EXPR ELSE EXPR
+EXPR            ::= MULT ((PLUS|MINUS) MULT)*
+MULT            ::= OPERANT ((MULTIPLY|DIVIDE) OPERANT)*
+
+
+LVALUE          ::= IDENTIFIER
+OPERANT         ::= IDENTIFIER
+                  | STRING
+                  | FLOAT
+                  | INTEGER
+                  | LBRACK EXPR RBRACK
+IDENTIFIER      ::= (ALPHA|UNDERSCORE) (ALPHA|NUM|UNDERSCORE)*
+STRING          ::= DQUOTE GRAPHIC DQUOTE
+INTEGER         ::= NUM+
+FLOAT           ::= NUM+ '.' NUM+
+ALPHA           ::= 'a' .. 'z' | 'A' .. 'Z'
+NUM             ::= '0' .. '1'
+GRAPHIC         ::= ' ' .. '~'
+DQUOTE          ::= '"'
+UNDERSCORE      ::= '_'
+BECOMES         ::= '='
+LBRACK          ::= '('
+RBRACK          ::= ')'
+VAR             ::= 'var'
+TYPE            ::= TYPE_STRING | TYPE_INT | TYPE_FLOAT
+TYPE_STRING     ::= 'string'
+TYPE_INT        ::= 'int'
+TYPE_FLOAT      ::= 'float'
+SEMICOLON       ::= ';'
+IF              ::= 'if'
+THEN            ::= 'then'
+ELSE            ::= 'else'
