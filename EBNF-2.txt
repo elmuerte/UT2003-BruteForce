@@ -1,0 +1,68 @@
+                           BruteForce language v2.00
+                        by Michiel 'El Muerte' Hendriks
+                           elmuerte@drunksnipers.com
+
+
+PROGRAM               ::= BEGIN DECLARATIONS STATEMENTS END
+DECLARATIONS          ::= (DECLARATION SEMICOLON)+
+DECLARATION           ::= VAR TYPE LVALUE
+TYPE                  ::= INTEGER
+                        | STRING
+                        | FLOAT
+                        | BOOLEAN
+LVALUE                ::= IDENTIFIER
+IDENTIFIER            ::= __implicit__
+STATEMENTS            ::= (STATEMENT SEMICOLON)+
+STATEMENT             ::= ASSIGNMENT
+                        | WHILEDO
+                        | IFTHENELSE
+ASSIGNMENT            ::= LVALUE BECOMES EXPR
+WHILEDO               ::= WHILE EXPR DO CODEBLOCK
+CODEBLOCK             ::= STATEMENT
+                        | (BEGIN STATEMENTS END)
+IFTHENELSE            ::= IF EXPR THEN CODEBLOCK (ELSE CODEBLOCK)?
+EXPR                  ::= BOOLEX
+BOOLEX                ::= ACCUM ((LT|LE|GT|GE|EQ|NE) ACCUM)*
+ACCUM                 ::= MULT ((PLUS|MINUS) MULT)*
+MULT                  ::= OPERAND ((MULTIPLY|DIVIDE) OPERAND)*
+OPERAND               ::= IDENTIFIER
+                        | INTVALUE
+                        | FLOATVALUE
+                        | STRINGVALUE
+                        | BOOLVALUE
+                        | LBRACK EXPR RBRACK
+INTVALUE              ::= __implicit__
+FLOATVALUE            ::= __implicit__
+STRINGVALUE           ::= __implicit__
+BOOLVALUE             ::= TRUE|FALSE
+
+
+BEGIN                 ::= 'begin'
+END                   ::= 'end'
+SEMICOLON             ::= ';'
+VAR                   ::= 'var'
+INTEGER               ::= 'int'
+STRING                ::= 'string'
+FLOAT                 ::= 'float'
+BOOLEAN               ::= 'bool'
+UNDERSCORE            ::= '_'
+BECOMES               ::= '='
+WHILE                 ::= 'while'
+DO                    ::= 'do'
+IF                    ::= 'if'
+THEN                  ::= 'then'
+ELSE                  ::= 'else'
+LT                    ::= '<'
+LE                    ::= '<='
+GT                    ::= '>'
+GE                    ::= '>='
+EQ                    ::= '=='
+NE                    ::= '!='
+PLUS                  ::= '+'
+MINUS                 ::= '-'
+MULTIPLY              ::= '*'
+DIVIDE                ::= '/'
+LBRACK                ::= '('
+RBRACK                ::= ')'
+TRUE                  ::= 'true'
+FALSE                 ::= 'false'

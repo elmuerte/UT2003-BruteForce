@@ -1,6 +1,7 @@
 /**
   Scanner for the Bruteforce language                   <br />
   Author: Michiel 'El Muerte' Hendriks                  <br />
+  DEPRECATED, see compiler for the new compiler
 */
 class BruteForce extends Commandlet config(BruteForce) dependsOn(Tokenizer) dependsOn(Scope);
 
