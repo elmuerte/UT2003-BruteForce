@@ -23,6 +23,7 @@ enum tokenType
   TT_Integer,
   TT_Float,
   TT_String,
+  TT_Operator,
   TT_EOF,
 };
 var private tokenType curTokenType;
@@ -137,7 +138,20 @@ private function tokenType _nextToken()
     pos++;
     curTokenType = TT_String;
   }
+  // operator: [+-*/=><!]+
   // literal
+  else if ((c == 33) || (c == 42) || (c == 43) || (c == 45) || (c == 47) || (c == 60) || (c == 61) || (c == 62) || (c == 61))
+  {
+    pos++;
+    c = _c();
+    while ((c == 33) || (c == 42) || (c == 43) || (c == 45) || (c == 47) || (c == 60) || (c == 61) || (c == 62) || (c == 61))
+    {
+      pos++;
+      c = _c();
+    }
+    endPos = pos;
+    curTokenType = TT_Operator;
+  }
   else {
     pos++;
     endPos = pos;

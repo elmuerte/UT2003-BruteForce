@@ -8,10 +8,12 @@ PROGRAM         ::= DECLARATIONS STATEMENTS
 DECLARATIONS    ::= (DECLARATION SEMICOLON)+
 DECLARATION     ::= VAR TYPE LVALUE
 STATEMENTS      ::= (STATEMENT SEMICOLON)+
-STATEMENT       ::= ASSIGNMENT | IFTHENELSE
+STATEMENT       ::= ASSIGNMENT | IFTHENELSE | PRINT | WHILEDO
 ASSIGNMENT      ::= LVALUE BECOMES EXPR
-IFTHENELSE      ::= IF EXPR THEN EXPR ELSE EXPR
-EXPR            ::= MULT ((PLUS|MINUS) MULT)*
+IFTHENELSE      ::= IF EXPR THEN STATEMENT ELSE STATEMENT
+WHILEDO         ::= WHILE EXPR DO STATEMENT
+PRINT           ::= 'print' LBRACK EXPR RBRACK
+ACCUM           ::= MULT ((PLUS|MINUS) MULT)*
 MULT            ::= OPERANT ((MULTIPLY|DIVIDE) OPERANT)*
 
 
@@ -21,6 +23,12 @@ OPERANT         ::= IDENTIFIER
                   | FLOAT
                   | INTEGER
                   | LBRACK EXPR RBRACK
+                  | ARGV
+                  | ARGC
+
+ARGV            ::= 'argv' LBRACK INTEGER RBRACK
+ARGC            ::= 'argc' LBRACK RBRACK
+
 IDENTIFIER      ::= (ALPHA|UNDERSCORE) (ALPHA|NUM|UNDERSCORE)*
 STRING          ::= DQUOTE GRAPHIC DQUOTE
 INTEGER         ::= NUM+
@@ -42,3 +50,5 @@ SEMICOLON       ::= ';'
 IF              ::= 'if'
 THEN            ::= 'then'
 ELSE            ::= 'else'
+WHILE           ::= 'while'
+DO              ::= 'do'

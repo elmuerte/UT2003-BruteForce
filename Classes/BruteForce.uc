@@ -7,6 +7,7 @@ class BruteForce extends Commandlet config(BruteForce) dependsOn(Tokenizer) depe
 var private Tokenizer t;
 var private Scope s;
 var config array<string> Code;
+var array<string> Input;
 
 function Parse()
 {
@@ -113,7 +114,7 @@ function _assignment()
   local Scope.Declaration result;
   result = s.getDeclaration(t.tokenString());
   t.nextToken();
-  assert(has(TT_Literal, "=")); // becomes
+  assert(has(TT_operator, "=")); // becomes
   t.nextToken();
   s.setDeclaration(result.name, _expr(result.type).value);
 }
@@ -122,9 +123,9 @@ function Scope.Declaration _expr(Scope.DeclarationType resultType)
 {
   local Scope.Declaration result;
   result = _mult(resultType);
-  while (has(TT_Literal, "+") || has(TT_Literal, "-"))
+  while (has(TT_operator, "+") || has(TT_operator, "-"))
   {
-    if (has(TT_Literal, "+"))
+    if (has(TT_operator, "+"))
     {
       t.nextToken();
       if (resultType == DT_String) result.value = result.value$_mult(resultType).value; 
@@ -132,7 +133,7 @@ function Scope.Declaration _expr(Scope.DeclarationType resultType)
       else if (resultType == DT_Float) result.value = String(Float(result.value)+Float(_mult(resultType).value)); 
       else if (resultType == DT_Bool) result.value = String(Bool(result.value) || Bool(_mult(resultType).value)); 
     }
-    else if (has(TT_Literal, "-"))
+    else if (has(TT_operator, "-"))
     {
       t.nextToken();
       if (resultType == DT_String) _mult(resultType); // not supported
@@ -147,24 +148,59 @@ function Scope.Declaration _expr(Scope.DeclarationType resultType)
 function Scope.Declaration _mult(Scope.DeclarationType resultType)
 {
   local Scope.Declaration result;
-  result = _operand(resultType);
-  while (has(TT_Literal, "*") || has(TT_Literal, "/"))
+  result = _boolop(resultType);
+  while (has(TT_operator, "*") || has(TT_operator, "/"))
   {
-    if (has(TT_Literal, "*"))
+    if (has(TT_operator, "*"))
     {
       t.nextToken();
-      if (resultType == DT_String) _operand(resultType); // not supported
-      else if (resultType == DT_Int) result.value = String(Int(result.value)*Int(_operand(resultType).value)); 
-      else if (resultType == DT_Float) result.value = String(Float(result.value)*Float(_operand(resultType).value)); 
-      else if (resultType == DT_Bool) result.value = String(Bool(result.value) && Bool(_operand(resultType).value)); 
+      if (resultType == DT_String) _boolop(resultType); // not supported
+      else if (resultType == DT_Int) result.value = String(Int(result.value)*Int(_boolop(resultType).value)); 
+      else if (resultType == DT_Float) result.value = String(Float(result.value)*Float(_boolop(resultType).value)); 
+      else if (resultType == DT_Bool) result.value = String(Bool(result.value) && Bool(_boolop(resultType).value)); 
     }
-    else if (has(TT_Literal, "/"))
+    else if (has(TT_operator, "/"))
     {
       t.nextToken();
-      if (resultType == DT_String) _operand(resultType); // not supported
-      else if (resultType == DT_Int) result.value = String(Int(result.value)/Int(_operand(resultType).value)); 
-      else if (resultType == DT_Float) result.value = String(Float(result.value)/Float(_operand(resultType).value)); 
-      else if (resultType == DT_Bool) result.value = String(Bool(result.value) || !Bool(_operand(resultType).value)); 
+      if (resultType == DT_String) _boolop(resultType); // not supported
+      else if (resultType == DT_Int) result.value = String(Int(result.value)/Int(_boolop(resultType).value)); 
+      else if (resultType == DT_Float) result.value = String(Float(result.value)/Float(_boolop(resultType).value)); 
+      else if (resultType == DT_Bool) result.value = String(Bool(result.value) || !Bool(_boolop(resultType).value)); 
+    }
+  }
+  return result;
+}
+
+function Scope.Declaration _boolop(Scope.DeclarationType resultType)
+{
+  local Scope.Declaration result;
+  result = _operand(resultType);
+  while (has(TT_operator, "==") || has(TT_operator, ">") || has(TT_operator, ">=") || has(TT_operator, "<") || has(TT_operator, "<="))
+  {
+    if (has(TT_operator, "=="))
+    {
+      t.nextToken();
+      result.value = string(result.value == _operand(resultType).value); 
+    }
+    else if (has(TT_operator, ">"))
+    {
+      t.nextToken();
+      result.value = string(result.value > _operand(resultType).value); 
+    }
+    else if (has(TT_operator, ">="))
+    {
+      t.nextToken();
+      result.value = string(result.value >= _operand(resultType).value); 
+    }
+    else if (has(TT_operator, "<"))
+    {
+      t.nextToken();
+      result.value = string(result.value < _operand(resultType).value); 
+    }
+    else if (has(TT_operator, "<="))
+    {
+      t.nextToken();
+      result.value = string(result.value <= _operand(resultType).value); 
     }
   }
   return result;
@@ -178,27 +214,44 @@ function Scope.Declaration _operand(Scope.DeclarationType resultType)
   {
     result.type = DT_Bool;
     result.value = String(true);
+    t.nextToken();
   }
   else if (has(TT_Identifier, "false")) 
   {
     result.type = DT_Bool;
     result.value = String(false);
+    t.nextToken();
   }
-  else if (has(TT_Identifier)) result = s.getDeclaration(t.tokenString());
+  else if (has(TT_Identifier, "argv"))
+  {
+    result = _argv(resultType);
+  }
+  else if (has(TT_Identifier, "argc"))
+  {
+    result = _argc(resultType);
+  }
+  else if (has(TT_Identifier)) 
+  {
+    result = s.getDeclaration(t.tokenString());
+    t.nextToken();
+  }
   else if (has(TT_String)) 
   {
     result.type = DT_String;
     result.value = t.tokenString();
+    t.nextToken();
   }
   else if (has(TT_Integer)) 
   {
     result.type = DT_Int;
     result.value = String(Int(t.tokenString()));
+    t.nextToken();
   }
   else if (has(TT_Float)) 
   {
     result.type = DT_Float;
     result.value = String(Float(t.tokenString()));
+    t.nextToken();
   }
   else if (has(TT_Literal, "(")) 
   {
@@ -215,6 +268,33 @@ function Scope.Declaration _operand(Scope.DeclarationType resultType)
     if (result.type == DT_Float) result.value = String(Float(result.value) != 0.0);
     result.type = DT_Bool;
   }
+  return result;
+}
+
+function Scope.Declaration _argv(Scope.DeclarationType resultType)
+{
+  local Scope.Declaration result;
+  t.nextToken();
+  assert(has(TT_Literal, "("));
+  t.nextToken();
+  assert(has(TT_Integer));
+  result.type = DT_String;
+  result.value = Input[Int(t.tokenString())];
+  t.nextToken();
+  assert(has(TT_Literal, ")"));
+  t.nextToken();
+  return result;
+}
+
+function Scope.Declaration _argc(Scope.DeclarationType resultType)
+{
+  local Scope.Declaration result;
+  t.nextToken();
+  assert(has(TT_Literal, "("));
+  result.type = DT_Int;
+  result.value = string(Input.length);
+  t.nextToken();
+  assert(has(TT_Literal, ")"));
   t.nextToken();
   return result;
 }
@@ -223,6 +303,7 @@ function Scope.Declaration _operand(Scope.DeclarationType resultType)
 
 event int Main( string Parms )
 {
+  class'wString'.static.split2(Parms, " ", Input);
   Parse();  
   return 0;
 }

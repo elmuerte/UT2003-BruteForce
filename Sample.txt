@@ -26,3 +26,20 @@ d=hello world
 e=true
 d=true
 c=true
+
+
+------------------------------------------------------------------------------
+
+[BruteForce.BruteForce]
+Code=var int cnt;
+Code=var string a;
+Code=cnt=argc();
+Code=if (cnt) then a=argv(0); else a="unknown";
+Code=print("argc="+cnt);
+Code=print(a);
+
+This should output with an empty input
+
+argc=0
+unknown
+
