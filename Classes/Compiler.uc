@@ -35,6 +35,7 @@ const __LBRACK                = "(";
 const __RBRACK                = ")";
 const __TRUE                  = "true";
 const __FALSE                 = "false";
+const __COMMA                 = ",";
 // terminals -- end
 
 var private Tokenizer t;
@@ -220,19 +221,18 @@ function _ifthenelse()
 
 function _assignment()
 {
-  a.AddRoot(NT_Keyword, __BECOMES);
-  _lvalue();
-  require(TT_Operator, __BECOMES);
+  local string tmp;
+  tmp = t.tokenString();
   t.nextToken();
-  _expr();
-  a.CloseRoot();
-}
-
-function _lvalue()
-{
-  require(TT_Identifier);
-  a.AddChild(NT_Identifier, t.tokenString());
-  t.nextToken();
+  if (has(TT_Literal, __LBRACK)) _functioncall(tmp);
+  else {
+    a.AddRoot(NT_Keyword, __BECOMES);
+    a.AddChild(NT_Identifier, tmp);
+    require(TT_Operator, __BECOMES);
+    t.nextToken();
+    _expr();
+    a.CloseRoot();
+  }
 }
 
 function _expr()
@@ -250,6 +250,7 @@ function _boolex()
   {
     a.AddRoot(NT_Keyword, t.tokenString());
     a.SwitchNode();
+    i++;
     t.nextToken();
     _accum();
   }
@@ -289,6 +290,7 @@ function _mult()
   {
     a.AddRoot(NT_Keyword, t.tokenString());
     a.SwitchNode();
+    i++;
     t.nextToken();
     _preop();
   }
@@ -322,28 +324,27 @@ function _preop()
 
 function _operand()
 {
+  local string tmp;
   if (has(TT_Identifier, __TRUE))
   {
-    a.AddChild(NT_Keyword, t.tokenString());
+    a.AddChild(NT_Boolean, t.tokenString());
     t.nextToken();
   }
   else if (has(TT_Identifier, __FALSE))
   {
-    a.AddChild(NT_Keyword, t.tokenString());
+    a.AddChild(NT_Boolean, t.tokenString());
     t.nextToken();
   }
   else if (has(TT_Identifier))
-  {
-    a.AddChild(NT_Identifier, t.tokenString());
+  {    
+    tmp = t.tokenString();
     t.nextToken();
     if (has(TT_Literal, __LBRACK)) // is function ??
     {
-      t.nextToken();
-      while (!has(TT_Literal, __RBRACK))
-      {
-        _operand();
-      }
-      t.nextToken(); // __RBRACK
+      _functioncall(tmp);
+    }
+    else {
+      a.AddChild(NT_Identifier, tmp);
     }
   }
   else if (has(TT_Integer))
@@ -363,15 +364,28 @@ function _operand()
   }
   else if (has(TT_Literal, __LBRACK))
   {
-    //a.AddRoot(NT_Keyword, __LBRACK);
     t.nextToken();
     _expr();
     require(TT_Literal, __RBRACK);
     t.nextToken();
-    //a.CloseRoot();
   }
   else {
     Warn("Unexpected token:"@t.tokenString()@"@ "$t.currentLine()$","$t.currentPos());
     assert(false);
   }
+}
+
+function _functioncall(string name)
+{
+  a.AddRoot(NT_Function, name);
+  t.nextToken();
+  while (!has(TT_Literal, __RBRACK))
+  {
+    _expr();
+    if (has(TT_Literal, __COMMA)) t.nextToken();
+    else break;
+  }
+  require(TT_Literal, __RBRACK);
+  t.nextToken(); // __RBRACK
+  a.CloseRoot();
 }

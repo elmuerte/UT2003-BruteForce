@@ -22,3 +22,19 @@ code=	 t = x+"->"+y;
 code=	 y = y-1;
 code=	 if odd(x) then x = (x+y)/x else x = x-y;
 code=end;
+
+------------------------------------------------------------------------------
+
+[BruteForce.BruteForce]
+code=var int x;
+code=var int y;
+code=var string tmp;
+code=x = argc();
+code=y = 0;
+code=while (y < x) do begin
+code=	print(argv(y));
+code=	y=y+1;
+code=end;
+code=if (x <= 0) then print("Please add some commandline arguments");
+
+This will print all commandline arguments passed to this commandlet

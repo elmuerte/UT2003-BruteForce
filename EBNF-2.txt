@@ -5,12 +5,11 @@
 
 PROGRAM               ::= DECLARATIONS STATEMENTS
 DECLARATIONS          ::= ((DECLARATION|FUNCTION) SEMICOLON)*
-DECLARATION           ::= (VAR TYPE LVALUE)
+DECLARATION           ::= (VAR TYPE IDENTIFIER)
 TYPE                  ::= INTEGER
                         | STRING
                         | FLOAT
                         | BOOLEAN
-LVALUE                ::= IDENTIFIER
 IDENTIFIER            ::= __implicit__
 FUNCTION              ::= FUNC TYPE IDENTIFIER LBRACK ARGUMENTS RBRACK DECLARATIONS BEGIN STATEMENTS END
 ARGUMENTS             ::= (TYPE LVALUE SEMICOLON)*
@@ -18,7 +17,8 @@ STATEMENTS            ::= (STATEMENT SEMICOLON)*
 STATEMENT             ::= ASSIGNMENT
                         | WHILEDO
                         | IFTHENELSE
-ASSIGNMENT            ::= LVALUE BECOMES EXPR
+ASSIGNMENT            ::= IDENTIFIER BECOMES EXPR
+                        | FUNCTIONCALL
 WHILEDO               ::= WHILE EXPR DO CODEBLOCK
 CODEBLOCK             ::= STATEMENT
                         | (BEGIN STATEMENTS END)
@@ -29,11 +29,13 @@ ACCUM                 ::= MULT ((PLUS|MINUS) MULT)*
 MULT                  ::= PREOP ((MULTIPLY|DIVIDE) PREOP)*
 PREOP                 ::= (MINUS|NOT)? OPERAND
 OPERAND               ::= IDENTIFIER
+                        | FUNCTIONCALL
                         | INTVALUE
                         | FLOATVALUE
                         | STRINGVALUE
                         | BOOLVALUE
                         | LBRACK EXPR RBRACK
+FUNCTIONCALL          ::= IDENTIFIER LBRACK (EXPR (COMMA EXPR)*)? RBRACK
 INTVALUE              ::= __implicit__
 FLOATVALUE            ::= __implicit__
 STRINGVALUE           ::= __implicit__
@@ -71,3 +73,4 @@ LBRACK                ::= '('
 RBRACK                ::= ')'
 TRUE                  ::= 'true'
 FALSE                 ::= 'false'
+COMMA                 ::= ','

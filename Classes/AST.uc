@@ -11,6 +11,7 @@ enum NodeType
   NT_Integer,
   NT_Float,
   NT_Boolean,
+  NT_Function,
 };
 
 struct Node
@@ -100,16 +101,6 @@ function SwitchNode()
   // remove child pointer from previous parent
   Tree[Tree[lastSib].parent].children.remove(Tree[Tree[lastSib].parent].children.length-2 ,1);
 }
-/*
-function SwitchNode()
-{
-  // set new parent
-  Tree[currentNode].children.length = Tree[currentNode].children.length+1;
-  Tree[currentNode].children[Tree[currentNode].children.length-1] = currentNode-1;
-  // remove child pointer from previous parent
-  Tree[Tree[currentNode-1].parent].children.remove(Tree[Tree[currentNode-1].parent].children.length-2 ,1);
-}
-*/
 
 /**
   Print the tree

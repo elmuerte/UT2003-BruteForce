@@ -8,6 +8,7 @@ var int verbose;
 
 enum DeclarationType
 {
+  DT_None,
   DT_String,
   DT_Int,
   DT_Float,
@@ -45,7 +46,7 @@ function DeclarationType getType(string name)
   {
     if ((declarations[i].name ~= name) && (declarations[i].scopelevel <= ScopeLevel))
     {
-      if (verbose> 0 ) log(ScopeLevel$"] getType("$name$")", 'Scope');
+      if (verbose> 0 ) log(ScopeLevel$"] getType("$name$") ="@declarations[i].type, 'Scope');
       return declarations[i].type;
     }
   }
