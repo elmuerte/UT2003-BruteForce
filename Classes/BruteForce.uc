@@ -8,6 +8,7 @@ class BruteForce extends Commandlet config(BruteForce) dependsOn(Tokenizer) depe
 var private Tokenizer t;
 var private Scope s;
 var private Compiler c;
+var private AST a;
 var config array<string> Code;
 var array<string> Input;
 
@@ -310,9 +311,18 @@ event int Main( string Parms )
   t = new class'Tokenizer';
   s = new class'Scope';
   c = new class'Compiler';
+  a = new class'AST';
+
   t.Create(Code);
+  a.Create();
+
+  StopWatch(false);
   t.nextToken();
-  c.Compile(t);
+  c.Compile(t, a);
+  Log("Compile time: ");
+  StopWatch(true);
+
+  a.printTree();
 
   return 0;
 }

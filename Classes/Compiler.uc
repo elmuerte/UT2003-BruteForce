@@ -1,7 +1,7 @@
 /**
   Analyse and compile the language (create an AST)
 */
-class Compiler extends Object dependsOn(Tokenizer) dependsOn(Scope);
+class Compiler extends Object dependsOn(Tokenizer) dependsOn(AST);
 
 // terminals
 const __BEGIN                 = "begin";
@@ -38,10 +38,12 @@ const __FALSE                 = "false";
 // terminals -- end
 
 var private Tokenizer t;
+var private AST a;
 
-function Compile(Tokenizer tokenizer)
+function Compile(Tokenizer tokenizer, AST tree)
 {
   t = tokenizer;
+  a = tree;
   _program();
 }
 
@@ -82,36 +84,36 @@ function _declarations()
 
 function _declaration()
 {
-  local Scope.DeclarationType dtype;
-  local string did;
+  a.AddRoot(NT_Keyword, __VAR);
   t.nextToken(); // __VAR
-  dtype = _type();
+  _type();
   require(TT_Identifier);
-  did = t.tokenString();
+  a.AddChild(NT_Identifier, t.tokenString());
   t.nextToken();
+  a.CloseRoot();
 }
 
-function Scope.DeclarationType _type()
+function _type()
 {
   if (has(TT_Identifier, __INTEGER)) 
   {
+    a.AddChild(NT_Keyword, __INTEGER);
     t.nextToken();
-    return DT_Int;
   }
   else if (has(TT_Identifier, __STRING)) 
   {
+    a.AddChild(NT_Keyword, __STRING);
     t.nextToken();
-    return DT_String;
   }
   else if (has(TT_Identifier, __FLOAT)) 
   {
+    a.AddChild(NT_Keyword, __FLOAT);
     t.nextToken();
-    return DT_Float;
   }
   else if (has(TT_Identifier, __BOOLEAN)) 
   {
+    a.AddChild(NT_Keyword, __BOOLEAN);
     t.nextToken();
-    return DT_Bool;
   }
   else {
     Warn("Unrecognised type:"@t.tokenString()@"@ "$t.currentLine()$","$t.currentPos());
@@ -121,12 +123,10 @@ function Scope.DeclarationType _type()
 
 function _function()
 {
-  local Scope.DeclarationType dtype;
-  local string did;
   t.nextToken(); // function
-  dtype = _type();
+  _type();
   require(TT_Identifier);
-  did = t.tokenString();
+  t.tokenString();
   t.nextToken();
   require(TT_Literal, __LBRACK);
   t.nextToken();
@@ -177,21 +177,25 @@ function _statement()
 
 function _whiledo()
 {
+  a.AddRoot(NT_Keyword, __WHILE);
   t.nextToken(); // WHILE
   _expr();
   require(TT_Identifier, __DO);
   t.nextToken();
   _codeblock();
+  a.CloseRoot();
 }
 
 function _codeblock()
 {
   if (has(TT_Identifier, __BEGIN))
   {
+    a.AddRoot(NT_Keyword, __BEGIN);
     t.nextToken();
     _statements();
     require(TT_Identifier, __END);
     t.nextToken();
+    a.CloseRoot();
   }
   else {
     _statement();
@@ -200,6 +204,7 @@ function _codeblock()
 
 function _ifthenelse()
 {
+  a.AddRoot(NT_Keyword, __IF);
   t.nextToken(); // IF
   _expr();
   require(TT_Identifier, __THEN);
@@ -210,19 +215,23 @@ function _ifthenelse()
     t.nextToken();
     _codeblock();
   }
+  a.CloseRoot();
 }
 
 function _assignment()
 {
+  a.AddRoot(NT_Keyword, "=");
   _lvalue();
   require(TT_Operator, __BECOMES);
   t.nextToken();
   _expr();
+  a.CloseRoot();
 }
 
 function _lvalue()
 {
   require(TT_Identifier);
+  a.AddChild(NT_Identifier, t.tokenString());
   t.nextToken();
 }
 
@@ -237,8 +246,11 @@ function _boolex()
   while (has(TT_Operator, __LT)||has(TT_Operator, __LE)||has(TT_Operator, __GT)||has(TT_Operator, __GE)||
     has(TT_Operator, __EQ)||has(TT_Operator, __NE))
   {
+    a.AddRoot(NT_Keyword, t.tokenString());
+    a.SwitchNode();
     t.nextToken();
     _accum();
+    //a.CloseRoot();
   }
 }
 
@@ -247,8 +259,11 @@ function _accum()
   _mult();
   while (has(TT_Operator, __PLUS)||has(TT_Operator, __MINUS))
   {
+    a.AddRoot(NT_Keyword, t.tokenString());
+    a.SwitchNode();
     t.nextToken();
     _mult();
+    //a.CloseRoot();
   }
 }
 
@@ -257,36 +272,50 @@ function _mult()
   _preop();
   while (has(TT_Operator, __MULTIPLY)||has(TT_Operator, __DIVIDE))
   {
+    a.AddRoot(NT_Keyword, t.tokenString());
+    a.SwitchNode();
     t.nextToken();
     _preop();
+    //a.CloseRoot();
   }
 }
 
 function _preop()
 {
+  local bool open;
+  open = false;
   if (has(TT_Operator, __MINUS))
   {
+    open = true;
+    a.AddRoot(NT_Keyword, __MINUS);
+    a.AddChild(NT_Integer, "0");
     t.nextToken();
   }
   else if (has(TT_Operator, __NOT))
   {
+    open = true;
+    a.AddRoot(NT_Keyword, __NOT);
     t.nextToken();
   }
   _operand();
+  if (open) a.CloseRoot();
 }
 
 function _operand()
 {
   if (has(TT_Identifier, __TRUE))
   {
+    a.AddChild(NT_Keyword, t.tokenString());
     t.nextToken();
   }
   else if (has(TT_Identifier, __FALSE))
   {
+    a.AddChild(NT_Keyword, t.tokenString());
     t.nextToken();
   }
   else if (has(TT_Identifier))
   {
+    a.AddChild(NT_Identifier, t.tokenString());
     t.nextToken();
     if (has(TT_Literal, __LBRACK)) // is function ??
     {
@@ -300,22 +329,27 @@ function _operand()
   }
   else if (has(TT_Integer))
   {
+    a.AddChild(NT_Integer, t.tokenString());
     t.nextToken();
   }
   else if (has(TT_String))
   {
+    a.AddChild(NT_String, t.tokenString());
     t.nextToken();
   }
   else if (has(TT_Float))
   {
+    a.AddChild(NT_Float, t.tokenString());
     t.nextToken();
   }
   else if (has(TT_Literal, __LBRACK))
   {
+    a.AddRoot(NT_Keyword, __LBRACK);
     t.nextToken();
     _expr();
     require(TT_Literal, __RBRACK);
     t.nextToken();
+    a.CloseRoot();
   }
   else {
     Warn("Unexpected token:"@t.tokenString()@"@ "$t.currentLine()$","$t.currentPos());
