@@ -242,62 +242,41 @@ function _expr()
 
 function _boolex()
 {  
-  local int i;
-  i = 0;
   _accum();
   while (has(TT_Operator, __LT)||has(TT_Operator, __LE)||has(TT_Operator, __GT)||has(TT_Operator, __GE)||
     has(TT_Operator, __EQ)||has(TT_Operator, __NE))
   {
     a.AddRoot(NT_Keyword, t.tokenString());
     a.SwitchNode();
-    i++;
     t.nextToken();
     _accum();
-  }
-  while (i > 0) 
-  {
     a.CloseRoot();
-    i--;
   }
 }
 
 function _accum()
 {
-  local int i;
-  i = 0;
   _mult();
   while (has(TT_Operator, __PLUS)||has(TT_Operator, __MINUS))
   {
     a.AddRoot(NT_Keyword, t.tokenString());
     a.SwitchNode();
-    i++;
     t.nextToken();
     _mult();
-  }
-  while (i > 0) 
-  {
     a.CloseRoot();
-    i--;
   }
 }
 
 function _mult()
 {
-  local int i;
-  i = 0;
   _preop();
   while (has(TT_Operator, __MULTIPLY)||has(TT_Operator, __DIVIDE))
   {
     a.AddRoot(NT_Keyword, t.tokenString());
     a.SwitchNode();
-    i++;
     t.nextToken();
     _preop();
-  }
-  while (i > 0) 
-  {
     a.CloseRoot();
-    i--;
   }
 }
 

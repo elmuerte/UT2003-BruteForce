@@ -38,3 +38,41 @@ code=end;
 code=if (x <= 0) then print("Please add some commandline arguments");
 
 This will print all commandline arguments passed to this commandlet
+
+------------------------------------------------------------------------------
+A more advanced example, this will convert the input date to a UNIX timestamp
+
+[BruteForce.BruteForce]
+code=var int year;
+code=var int mon;
+code=var int day;
+code=var int hour;
+code=var int min;
+code=var int sec;
+code=var int result;
+
+code=if (argc() >= 6) then begin
+code=	year = argv(0);
+code=	mon = argv(1);
+code=	day = argv(2);
+code=	hour = argv(3);
+code=	min = argv(4);
+code=	sec = argv(5);
+
+code=	mon = mon-2;
+code=	if (mon <= 0) then begin
+code=		mon = mon + 12;
+code=		year = year-1;
+code=	end;
+
+code=	result=(((
+code=	    (year/4 - year/100 + year/400 + (367*mon)/12 + day) +
+code=	      year*365 - 719499
+code=	    )*24 + (hour-1) 
+code=	   )*60 + min  
+code=	  )*60 + sec; 
+
+code=	print("UNIX timestamp: "+result);
+
+code=end
+code=else print("Usage: [year] [month] [day] [hour] [minute] [second]");

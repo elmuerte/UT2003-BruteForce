@@ -86,6 +86,9 @@ private function bool boolean(string in)
   return !(in ~= __FALSE);
 }
 
+/**
+  uscript bool to BruteForce bool
+*/
 private function string boolToString(bool in)
 {
   if (in) return __TRUE;
@@ -105,7 +108,7 @@ private function _assignment(int node)
 
 private function _ifthenelse(int node)
 {
-  if (boolean(_expr(Child(node, 0)).value)) //if true
+  if (boolean(typeCast(_expr(Child(node, 0)), DT_Bool).value)) //if true
   {
     _codeblock(Child(node, 1)); // then
   }
@@ -117,7 +120,7 @@ private function _ifthenelse(int node)
 
 private function _whiledo(int node)
 {
-  while (boolean(_expr(Child(node, 0)).value)) //while true
+  while (boolean(typeCast(_expr(Child(node, 0)), DT_Bool).value)) //while true
   {
     _codeblock(Child(node, 1)); // do
   }  
@@ -150,44 +153,68 @@ private function Scope.Declaration _boolex(int node, optional Scope.DeclarationT
   {
     if (a.Tree[node].value == __LT)
     {
-      d = _expr(Child(node, 0));
+      d = _expr(Child(node, 0), type);
       type = d.type;
       if (type == DT_Int) d.value = boolToString(Int(d.value) < Int(_expr(Child(node, 1), type).value));
+      if (type == DT_Float) d.value = boolToString(Float(d.value) < Float(_expr(Child(node, 1), type).value));
+      if (type == DT_Bool) d.value = boolToString(Int(Boolean(d.value)) < Int(Boolean(_expr(Child(node, 1), type).value)));
+      if (type == DT_String) d.value = boolToString(d.value < _expr(Child(node, 1), type).value);
+      d.type = DT_Bool;
       return d;
     }
     else if (a.Tree[node].value == __LE)
     {
-      d = _expr(Child(node, 0));
+      d = _expr(Child(node, 0), type);
       type = d.type;
       if (type == DT_Int) d.value = boolToString(Int(d.value) <= Int(_expr(Child(node, 1), type).value));
+      if (type == DT_Float) d.value = boolToString(Float(d.value) <= Float(_expr(Child(node, 1), type).value));
+      if (type == DT_Bool) d.value = boolToString(Int(Boolean(d.value)) <= Int(Boolean(_expr(Child(node, 1), type).value)));
+      if (type == DT_String) d.value = boolToString(d.value <= _expr(Child(node, 1), type).value);
+      d.type = DT_Bool;
       return d;
     }
     else if (a.Tree[node].value == __GT)
     {
-      d = _expr(Child(node, 0));
+      d = _expr(Child(node, 0), type);
       type = d.type;
       if (type == DT_Int) d.value = boolToString(Int(d.value) > Int(_expr(Child(node, 1), type).value));
+      if (type == DT_Float) d.value = boolToString(Float(d.value) > Float(_expr(Child(node, 1), type).value));
+      if (type == DT_Bool) d.value = boolToString(Int(Boolean(d.value)) > Int(Boolean(_expr(Child(node, 1), type).value)));
+      if (type == DT_String) d.value = boolToString(d.value > _expr(Child(node, 1), type).value);
+      d.type = DT_Bool;
       return d;
     }
     else if (a.Tree[node].value == __GE)
     {
-      d = _expr(Child(node, 0));
+      d = _expr(Child(node, 0), type);
       type = d.type;
       if (type == DT_Int) d.value = boolToString(Int(d.value) >= Int(_expr(Child(node, 1), type).value));
+      if (type == DT_Float) d.value = boolToString(Float(d.value) >= Float(_expr(Child(node, 1), type).value));
+      if (type == DT_Bool) d.value = boolToString(Int(Boolean(d.value)) >= Int(Boolean(_expr(Child(node, 1), type).value)));
+      if (type == DT_String) d.value = boolToString(d.value >= _expr(Child(node, 1), type).value);
+      d.type = DT_Bool;
       return d;
     }
     else if (a.Tree[node].value == __EQ)
     {
-      d = _expr(Child(node, 0));
+      d = _expr(Child(node, 0), type);
       type = d.type;
       if (type == DT_Int) d.value = boolToString(Int(d.value) == Int(_expr(Child(node, 1), type).value));
+      if (type == DT_Float) d.value = boolToString(Float(d.value) == Float(_expr(Child(node, 1), type).value));
+      if (type == DT_Bool) d.value = boolToString(Boolean(d.value) == Boolean(_expr(Child(node, 1), type).value));
+      if (type == DT_String) d.value = boolToString(d.value == _expr(Child(node, 1), type).value);
+      d.type = DT_Bool;
       return d;
     }
     else if (a.Tree[node].value == __NE)
     {
-      d = _expr(Child(node, 0));
+      d = _expr(Child(node, 0), type);
       type = d.type;
       if (type == DT_Int) d.value = boolToString(Int(d.value) != Int(_expr(Child(node, 1), type).value));
+      if (type == DT_Float) d.value = boolToString(Float(d.value) != Float(_expr(Child(node, 1), type).value));
+      if (type == DT_Bool) d.value = boolToString(Boolean(d.value) != Boolean(_expr(Child(node, 1), type).value));
+      if (type == DT_String) d.value = boolToString(d.value != _expr(Child(node, 1), type).value);
+      d.type = DT_Bool;
       return d;
     }
   }
@@ -201,16 +228,22 @@ private function Scope.Declaration _accum(int node, optional Scope.DeclarationTy
   {
     if (a.Tree[node].value == __PLUS)
     {
-      d = _expr(Child(node, 0));
+      d = _expr(Child(node, 0), type);
       type = d.type;
       if (type == DT_Int) d.value = String(Int(d.value) + Int(_expr(Child(node, 1), type).value));
+      if (type == DT_Float) d.value = String(Float(d.value) + Float(_expr(Child(node, 1), type).value));
+      if (type == DT_Bool) d.value = String(Boolean(d.value) && !Boolean(_expr(Child(node, 1), type).value));
+      if (type == DT_String) d.value = d.value $ _expr(Child(node, 1), type).value;
       return d;
     }
     else if (a.Tree[node].value == __MINUS)
     {
-      d = _expr(Child(node, 0));
+      d = _expr(Child(node, 0), type);
       type = d.type;
       if (type == DT_Int) d.value = String(Int(d.value) - Int(_expr(Child(node, 1), type).value));
+      if (type == DT_Float) d.value = String(Float(d.value) - Float(_expr(Child(node, 1), type).value));
+      if (type == DT_Bool) d.value = String(Boolean(d.value) && !Boolean(_expr(Child(node, 1), type).value));
+      if (type == DT_String) _expr(Child(node, 1), type).value;
       return d;
     }
   }
@@ -224,16 +257,37 @@ private function Scope.Declaration _mult(int node, optional Scope.DeclarationTyp
   {
     if (a.Tree[node].value == __MULTIPLY)
     {
-      d = _expr(Child(node, 0));
+      d = _expr(Child(node, 0), type);
       type = d.type;
       if (type == DT_Int) d.value = String(Int(d.value) * Int(_expr(Child(node, 1), type).value));
+      if (type == DT_Float) d.value = String(Float(d.value) * Float(_expr(Child(node, 1), type).value));
+      if (type == DT_Bool) d.value = String(Boolean(d.value) || Boolean(_expr(Child(node, 1), type).value)); 
+      if (type == DT_String) _expr(Child(node, 1), type); // ??
       return d;
     }
     else if (a.Tree[node].value == __DIVIDE)
     {
-      d = _expr(Child(node, 0));
+      d = _expr(Child(node, 0), type);
       type = d.type;
       if (type == DT_Int) d.value =  String(Int(d.value) / Int(_expr(Child(node, 1), type).value));
+      if (type == DT_Float) d.value = String(Float(d.value) / Float(_expr(Child(node, 1), type).value));
+      if (type == DT_Bool) d.value = String(Boolean(d.value) || !Boolean(_expr(Child(node, 1), type).value)); 
+      if (type == DT_String) _expr(Child(node, 1), type); //?
+      return d;
+    }
+  }
+  return _preop(node, type);
+}
+
+private function Scope.Declaration _preop(int node, optional Scope.DeclarationType type)
+{
+  local Scope.Declaration d;
+  if (a.Tree[node].type == NT_Keyword)
+  {
+    if (a.Tree[node].value == __NOT)
+    {
+      d.type = DT_Bool;
+      d.value = BoolToString(!Boolean(_expr(Child(node, 0), DT_Bool).value));
       return d;
     }
   }
@@ -272,7 +326,7 @@ private function Scope.Declaration _operand(int node, optional Scope.Declaration
     Warn("Unexpected node:"@a.Tree[node].value);
     Assert(false);
   }
-  //if (d.type != type) d = typeCast(d.type, type); // from to
+  if ((type != DT_None) && (d.type != type)) d = typeCast(d, type); // from to
   return d;
 }
 
@@ -281,7 +335,7 @@ private function Scope.Declaration _functioncall(int node)
   local Scope.Declaration d;
   if (a.Tree[node].value ~= "print")
   {
-    d = _expr(Child(node, 0));
+    d = typeCast(_expr(Child(node, 0)), DT_String);
     log(d.value);
     return d;
   }
@@ -297,8 +351,61 @@ private function Scope.Declaration _functioncall(int node)
     d.value = input[Int(_expr(Child(node, 0), DT_Int).value)];
     return d;
   }
+  if (a.Tree[node].value ~= "int")
+  {
+    d = typeCast(_expr(Child(node, 0)), DT_Int);
+    return d;
+  }
+  if (a.Tree[node].value ~= "float")
+  {
+    d = typeCast(_expr(Child(node, 0)), DT_Float);
+    return d;
+  }
+  if (a.Tree[node].value ~= "string")
+  {
+    d = typeCast(_expr(Child(node, 0)), DT_String);
+    return d;
+  }
+  if (a.Tree[node].value ~= "bool")
+  {
+    d = typeCast(_expr(Child(node, 0)), DT_Bool);
+    return d;
+  }
   else {
     Warn("Undeclared function:"@a.Tree[node].value);
     Assert(false);
   }
+}
+
+/**
+  Convert from one type to the other
+*/
+private function Scope.Declaration typeCast(Scope.Declaration d, Scope.DeclarationType type)
+{
+  if (d.type == type) return d;
+  if (type == DT_Int)
+  {
+    if (d.type == DT_Bool) d.value = String(Int(boolean(d.value)));
+    else d.value = String(Int(d.value));
+    d.type = DT_Int;
+  }
+  else if (type == DT_Int)
+  {
+    if (d.type == DT_Bool) d.value = String(Float(boolean(d.value)));
+    else d.value = String(Float(d.value));
+    d.type = DT_Float;
+  }
+  else if (type == DT_Bool)
+  {
+    if (d.type == DT_String) d.value = boolToString(d.value != "");
+    else if (d.type == DT_Int) d.value = boolToString(Int(d.value) != 0);
+    else if (d.type == DT_Float) d.value = boolToString(Float(d.value) != 0.0);
+    else d.value = boolToString(Boolean(d.value));
+    d.type = DT_Bool;
+  }
+  else if (type == DT_String)
+  {
+    d.type = DT_String;
+  }
+  return d;
 }
