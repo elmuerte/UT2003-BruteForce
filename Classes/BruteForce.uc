@@ -122,21 +122,24 @@ function Scope.Declaration _expr(Scope.DeclarationType resultType)
 {
   local Scope.Declaration result;
   result = _mult(resultType);
-  if (has(TT_Literal, "+"))
+  while (has(TT_Literal, "+") || has(TT_Literal, "-"))
   {
-    t.nextToken();
-    if (resultType == DT_String) result.value = result.value$_mult(resultType).value; 
-    else if (resultType == DT_Int) result.value = String(Int(result.value)+Int(_mult(resultType).value)); 
-    else if (resultType == DT_Float) result.value = String(Float(result.value)+Float(_mult(resultType).value)); 
-    else if (resultType == DT_Bool) result.value = String(Bool(result.value) || Bool(_mult(resultType).value)); 
-  }
-  else if (has(TT_Literal, "-"))
-  {
-    t.nextToken();
-    if (resultType == DT_String) _mult(resultType); // not supported
-    else if (resultType == DT_Int) result.value = String(Int(result.value)-Int(_mult(resultType).value)); 
-    else if (resultType == DT_Float) result.value = String(Float(result.value)-Float(_mult(resultType).value)); 
-    else if (resultType == DT_Bool) result.value = String(Bool(result.value) && !Bool(_mult(resultType).value)); 
+    if (has(TT_Literal, "+"))
+    {
+      t.nextToken();
+      if (resultType == DT_String) result.value = result.value$_mult(resultType).value; 
+      else if (resultType == DT_Int) result.value = String(Int(result.value)+Int(_mult(resultType).value)); 
+      else if (resultType == DT_Float) result.value = String(Float(result.value)+Float(_mult(resultType).value)); 
+      else if (resultType == DT_Bool) result.value = String(Bool(result.value) || Bool(_mult(resultType).value)); 
+    }
+    else if (has(TT_Literal, "-"))
+    {
+      t.nextToken();
+      if (resultType == DT_String) _mult(resultType); // not supported
+      else if (resultType == DT_Int) result.value = String(Int(result.value)-Int(_mult(resultType).value)); 
+      else if (resultType == DT_Float) result.value = String(Float(result.value)-Float(_mult(resultType).value)); 
+      else if (resultType == DT_Bool) result.value = String(Bool(result.value) && !Bool(_mult(resultType).value)); 
+    }
   }
   return result;
 }
@@ -145,21 +148,24 @@ function Scope.Declaration _mult(Scope.DeclarationType resultType)
 {
   local Scope.Declaration result;
   result = _operand(resultType);
-  if (has(TT_Literal, "*"))
+  while (has(TT_Literal, "*") || has(TT_Literal, "/"))
   {
-    t.nextToken();
-    if (resultType == DT_String) _operand(resultType); // not supported
-    else if (resultType == DT_Int) result.value = String(Int(result.value)*Int(_operand(resultType).value)); 
-    else if (resultType == DT_Float) result.value = String(Float(result.value)*Float(_operand(resultType).value)); 
-    else if (resultType == DT_Bool) result.value = String(Bool(result.value) && Bool(_operand(resultType).value)); 
-  }
-  else if (has(TT_Literal, "/"))
-  {
-    t.nextToken();
-    if (resultType == DT_String) _operand(resultType); // not supported
-    else if (resultType == DT_Int) result.value = String(Int(result.value)/Int(_operand(resultType).value)); 
-    else if (resultType == DT_Float) result.value = String(Float(result.value)/Float(_operand(resultType).value)); 
-    else if (resultType == DT_Bool) result.value = String(Bool(result.value) || !Bool(_operand(resultType).value)); 
+    if (has(TT_Literal, "*"))
+    {
+      t.nextToken();
+      if (resultType == DT_String) _operand(resultType); // not supported
+      else if (resultType == DT_Int) result.value = String(Int(result.value)*Int(_operand(resultType).value)); 
+      else if (resultType == DT_Float) result.value = String(Float(result.value)*Float(_operand(resultType).value)); 
+      else if (resultType == DT_Bool) result.value = String(Bool(result.value) && Bool(_operand(resultType).value)); 
+    }
+    else if (has(TT_Literal, "/"))
+    {
+      t.nextToken();
+      if (resultType == DT_String) _operand(resultType); // not supported
+      else if (resultType == DT_Int) result.value = String(Int(result.value)/Int(_operand(resultType).value)); 
+      else if (resultType == DT_Float) result.value = String(Float(result.value)/Float(_operand(resultType).value)); 
+      else if (resultType == DT_Bool) result.value = String(Bool(result.value) || !Bool(_operand(resultType).value)); 
+    }
   }
   return result;
 }
@@ -176,7 +182,7 @@ function Scope.Declaration _operand(Scope.DeclarationType resultType)
   else if (has(TT_Identifier, "false")) 
   {
     result.type = DT_Bool;
-    result.value = String(true);
+    result.value = String(false);
   }
   else if (has(TT_Identifier)) result = s.getDeclaration(t.tokenString());
   else if (has(TT_String)) 
@@ -200,6 +206,14 @@ function Scope.Declaration _operand(Scope.DeclarationType resultType)
     result = _expr(resultType);
     assert(has(TT_Literal, ")"));
     t.nextToken();
+  }
+  // convert to bool
+  if ((resultType == DT_Bool) && (result.type != DT_Bool))
+  {    
+    if (result.type == DT_String) result.value = String(result.value != "");
+    if (result.type == DT_Int) result.value = String(Int(result.value) != 0);
+    if (result.type == DT_Float) result.value = String(Float(result.value) != 0.0);
+    result.type = DT_Bool;
   }
   t.nextToken();
   return result;

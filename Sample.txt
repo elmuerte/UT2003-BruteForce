@@ -1,0 +1,28 @@
+[BruteForce.BruteForce]
+Code=var int a;
+Code=var int b;
+Code=var float c;
+Code=var string d;
+Code=var bool e;
+Code=b=5;
+Code=a=b+1*2;
+Code=c=b/a;
+Code=d="hello"+" world";
+Code=e=1;
+Code=print("a="+a);
+Code=print("b="+b);
+Code=print("c="+c);
+Code=print("d="+d);
+Code=if e then print("e=true"); else print("e=false");
+Code=if d then print("d=true"); else print("d=false");
+Code=if c then print("c=true"); else print("c=false");
+
+This should output
+
+a=7
+b=5
+c=0.71
+d=hello world
+e=true
+d=true
+c=true
