@@ -76,3 +76,80 @@ code=	print("UNIX timestamp: "+result);
 
 code=end
 code=else print("Usage: [year] [month] [day] [hour] [minute] [second]");
+
+
+------------------------------------------------------------------------------
+Calculate of an input number is even and/or prime
+
+[BruteForce.BruteForce]
+code=function bool isEven(int in)
+code=var int x;
+code=begin
+code=	result=in % 2 == 0;
+code=end;
+
+code=function bool isPrime(int in)
+code=var int i;
+code=begin
+code=	result = true;
+code=	i = 2;
+code=	while (result && (i <= in/2)) do begin
+code=		result = (in % i) != 0;
+code=		i = i+1;
+code=	end;
+code=end;
+
+code=print("Is even: "+isEven(argv(0)));
+code=print("Is prime: "+isPrime(argv(0)));
+
+
+------------------------------------------------------------------------------
+Prints easter date from 2003 to 2012
+
+[BruteForce.BruteForce]
+code= var int y;
+code= var int ey;
+
+code=function string easter(int year)
+code=var int m;
+code=var int d;
+code=var int g;
+code=var int c;
+code=var int x;
+code=var int z;
+code=var int b;
+code=var int e;
+code=begin
+code=     g = year % 19 + 1;         
+code=     c = (year / 100) + 1;
+code=     x = (3*c / 4) - 12;
+code=     z = ((8*c + 5) / 25) - 5;
+code=     b = (5*year / 4) - x - 10;
+code=     e = (11*g + 20 + z - x);
+code=     e = e % 30;                     
+code=     if e < 0 then e = e+30;
+code=     if (((e == 25)+(g>11) == 2) + (e==24)) > 0 then e = e+1;
+code=     d = 44-e;
+code=     if d < 21 then d = d+30;
+code=     d = d+7-((b+d) - ((b+d)/7)*7);
+code=     if d>31 then m = 4 else m = 3;
+code=     if d>31 then d = d-31;
+code=     result = ""+year+"-"+m+"-"+d;
+code=end;
+
+code= y = 2003;
+code= ey = 2012;
+
+code= if (argc() == 1) then ey = Int(argv(0));
+code= if (argc() == 2) then begin
+code=	y = Int(argv(0));
+code=	ey = Int(argv(1));
+code= end;
+code= print("Day of Easter for "+y+"-"+ey+".");
+
+code= while (y <= ey) do begin
+code=	  print(easter(y));
+code=     y = y+1;
+code= end;
+
+------------------------------------------------------------------------------
