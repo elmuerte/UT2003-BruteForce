@@ -21,14 +21,18 @@ const __GT                    = ">";
 const __GE                    = ">=";
 const __EQ                    = "==";
 const __NE                    = "!=";
+const __AND                   = "&&";
+const __OR                    = "||";
 const __PLUS                  = "+";
 const __MINUS                 = "-";
 const __MULTIPLY              = "*";
 const __DIVIDE                = "/";
+const __MOD                   = "%";
 const __NOT                   = "!";
 const __TRUE                  = "true";
 const __FALSE                 = "false";
 // terminals -- end
+const FUNCRESULT              = "result";
 
 function Create(AST inAst, Scope inScope, array<string> inInput)
 {
@@ -55,6 +59,7 @@ private function ExecuteRoot(int node)
     if (a.Tree[node].value == __BECOMES) _assignment(node);
     if (a.Tree[node].value == __IF) _ifthenelse(node);
     if (a.Tree[node].value == __WHILE) _whiledo(node);
+    if (a.Tree[node].value == __FUNC) _function(node);
   }
   if (a.Tree[node].type == NT_Function)
   {
@@ -95,15 +100,48 @@ private function string boolToString(bool in)
   else return __FALSE;
 }
 
-private function _var(int node)
+/**
+  Convert from one type to the other
+*/
+private function Scope.Declaration typeCast(Scope.Declaration d, Scope.DeclarationType type)
+{
+  if (d.type == type) return d;
+  if (type == DT_Int)
+  {
+    if (d.type == DT_Bool) d.value = String(Int(boolean(d.value)));
+    else d.value = String(Int(d.value));
+    d.type = DT_Int;
+  }
+  else if (type == DT_Int)
+  {
+    if (d.type == DT_Bool) d.value = String(Float(boolean(d.value)));
+    else d.value = String(Float(d.value));
+    d.type = DT_Float;
+  }
+  else if (type == DT_Bool)
+  {
+    if (d.type == DT_String) d.value = boolToString(d.value != "");
+    else if (d.type == DT_Int) d.value = boolToString(Int(d.value) != 0);
+    else if (d.type == DT_Float) d.value = boolToString(Float(d.value) != 0.0);
+    else d.value = boolToString(Boolean(d.value));
+    d.type = DT_Bool;
+  }
+  else if (type == DT_String)
+  {
+    d.type = DT_String;
+  }
+  return d;
+}
+
+private function _var(int node, optional string initval)
 {
                    // name                                 value
-  s.newDeclaration(ChildValue(node, 1), s.stringToType(ChildValue(node, 0)));
+  s.newDeclaration(ChildValue(node, 1), s.stringToType(ChildValue(node, 0)), initval);
 }
 
 private function _assignment(int node)
 {                  // name              expression            left hand type
-  s.setDeclaration(ChildValue(node, 0), _expr(Child(node, 1), s.getType(ChildValue(node, 0))).value);
+  s.setDeclaration(ChildValue(node, 0), typeCast(_expr(Child(node, 1)), s.getType(ChildValue(node, 0))).value );
 }
 
 private function _ifthenelse(int node)
@@ -217,6 +255,20 @@ private function Scope.Declaration _boolex(int node, optional Scope.DeclarationT
       d.type = DT_Bool;
       return d;
     }
+    else if (a.Tree[node].value == __AND)
+    {
+      d = _expr(Child(node, 0));
+      d.value = boolToString( Boolean(d.value) && Boolean(_expr(Child(node, 1)).value) );
+      d.type = DT_Bool;
+      return d;
+    }
+    else if (a.Tree[node].value == __OR)
+    {
+      d = _expr(Child(node, 0));
+      d.value = boolToString(Boolean(d.value) || Boolean(_expr(Child(node, 1)).value));
+      d.type = DT_Bool;
+      return d;
+    }
   }
   return _accum(node, type);
 }
@@ -272,6 +324,16 @@ private function Scope.Declaration _mult(int node, optional Scope.DeclarationTyp
       if (type == DT_Int) d.value =  String(Int(d.value) / Int(_expr(Child(node, 1), type).value));
       if (type == DT_Float) d.value = String(Float(d.value) / Float(_expr(Child(node, 1), type).value));
       if (type == DT_Bool) d.value = String(Boolean(d.value) || !Boolean(_expr(Child(node, 1), type).value)); 
+      if (type == DT_String) _expr(Child(node, 1), type); //?
+      return d;
+    }
+    else if (a.Tree[node].value == __MOD)
+    {
+      d = _expr(Child(node, 0), type);
+      type = d.type;
+      if (type == DT_Int) d.value =  String(Int(Int(d.value) % Int(_expr(Child(node, 1), type).value)));
+      if (type == DT_Float) d.value = String(Float(d.value) % Float(_expr(Child(node, 1), type).value));
+      if (type == DT_Bool) _expr(Child(node, 1), type); // ??
       if (type == DT_String) _expr(Child(node, 1), type); //?
       return d;
     }
@@ -372,40 +434,37 @@ private function Scope.Declaration _functioncall(int node)
     return d;
   }
   else {
-    Warn("Undeclared function:"@a.Tree[node].value);
-    Assert(false);
+    d = s.getDeclaration(a.Tree[node].value, DT_Function);
+    d = _execfunction(int(d.value), node);
+    return d;
   }
+  Warn("Undeclared function:"@a.Tree[node].value);
+  Assert(false);
 }
 
-/**
-  Convert from one type to the other
-*/
-private function Scope.Declaration typeCast(Scope.Declaration d, Scope.DeclarationType type)
+private function _function(int node)
 {
-  if (d.type == type) return d;
-  if (type == DT_Int)
+  //               function name        
+  s.newDeclaration(ChildValue(node, 1), DT_Function, string(node));
+}
+
+private function Scope.Declaration _execfunction(int func, int node)
+{
+  local Scope.Declaration d;
+  local int i, j;
+  s.openScope();                      
+  s.newDeclaration(FUNCRESULT, s.stringToType(ChildValue(func, 0))); // return type
+  j = Child(func, 1);
+  for (i = 0; i < a.tree[j].children.length; i++)
   {
-    if (d.type == DT_Bool) d.value = String(Int(boolean(d.value)));
-    else d.value = String(Int(d.value));
-    d.type = DT_Int;
+    _var(Child(j, i), _expr(Child(node, i)).value);
   }
-  else if (type == DT_Int)
+  for (i = 2; i < a.tree[func].children.length; i++) // 0 = return type, 1 = function name
   {
-    if (d.type == DT_Bool) d.value = String(Float(boolean(d.value)));
-    else d.value = String(Float(d.value));
-    d.type = DT_Float;
+    ExecuteRoot(a.Tree[func].children[i]);
   }
-  else if (type == DT_Bool)
-  {
-    if (d.type == DT_String) d.value = boolToString(d.value != "");
-    else if (d.type == DT_Int) d.value = boolToString(Int(d.value) != 0);
-    else if (d.type == DT_Float) d.value = boolToString(Float(d.value) != 0.0);
-    else d.value = boolToString(Boolean(d.value));
-    d.type = DT_Bool;
-  }
-  else if (type == DT_String)
-  {
-    d.type = DT_String;
-  }
+  d = s.getDeclaration(FUNCRESULT);
+  s.closeScope();
   return d;
 }
+

@@ -13,6 +13,7 @@ enum DeclarationType
   DT_Int,
   DT_Float,
   DT_Bool,
+  DT_Function,
 };
 
 struct Declaration
@@ -32,6 +33,11 @@ function Declaration getDeclaration(string name, optional DeclarationType type)
     if ((declarations[i].name ~= name) && (declarations[i].scopelevel <= ScopeLevel))
     {
       if (verbose> 0 ) log(ScopeLevel$"] getDeclaration("$name$", "$type$")", 'Scope');
+      if ((type != DT_None) && (declarations[i].type != type))
+      {
+        Warn("Declaration type doesn't match:"@name@"has"@declarations[i].type@"requested"@type);
+        Assert(false);
+      }
       return declarations[i];
     }
   }
@@ -70,7 +76,7 @@ function string setDeclaration(string name, string value, optional DeclarationTy
   Assert(false);
 }
 
-function newDeclaration(string name, optional DeclarationType type)
+function newDeclaration(string name, optional DeclarationType type, optional string value)
 {
   local int i;
   for (i = 0; i < declarations.length; i++)
@@ -85,6 +91,7 @@ function newDeclaration(string name, optional DeclarationType type)
   declarations.length = i+1;
   declarations[i].name = name;
   declarations[i].scopelevel = ScopeLevel;
+  declarations[i].value = value;
   declarations[i].type = type;
 }
 

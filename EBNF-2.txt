@@ -12,7 +12,7 @@ TYPE                  ::= INTEGER
                         | BOOLEAN
 IDENTIFIER            ::= __implicit__
 FUNCTION              ::= FUNC TYPE IDENTIFIER LBRACK ARGUMENTS RBRACK DECLARATIONS BEGIN STATEMENTS END
-ARGUMENTS             ::= (TYPE LVALUE SEMICOLON)*
+ARGUMENTS             ::= (TYPE LVALUE (SEMICOLON TYPE LVALUE)*)?
 STATEMENTS            ::= (STATEMENT SEMICOLON)*
 STATEMENT             ::= ASSIGNMENT
                         | WHILEDO

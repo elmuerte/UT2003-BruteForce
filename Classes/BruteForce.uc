@@ -16,7 +16,17 @@ var array<string> Input;
 
 event int Main( string Parms )
 {
+  local int n;
+  local bool showTree;
   class'wString'.static.split2(Parms, " ", Input, true, "\"");
+  for (n = input.length-1; n >= 0; n--)
+  {
+    if (input[n] ~= "-showtree")
+    {
+      input.remove(n, 1);
+      showTree = true;
+    }
+  }
   
   t = new class'Tokenizer';
   s = new class'Scope';
@@ -33,7 +43,7 @@ event int Main( string Parms )
   Log("Compile time: ");
   StopWatch(true);
 
-  //a.printTree();
+  if (showTree) a.printTree();
 
   StopWatch(false);
   i.Create(a, s, input);

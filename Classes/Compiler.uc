@@ -26,10 +26,13 @@ const __GT                    = ">";
 const __GE                    = ">=";
 const __EQ                    = "==";
 const __NE                    = "!=";
+const __AND                   = "&&";
+const __OR                    = "||";
 const __PLUS                  = "+";
 const __MINUS                 = "-";
 const __MULTIPLY              = "*";
 const __DIVIDE                = "/";
+const __MOD                   = "%";
 const __NOT                   = "!";
 const __LBRACK                = "(";
 const __RBRACK                = ")";
@@ -124,15 +127,17 @@ function _type()
 
 function _function()
 {
+  a.AddRoot(NT_Keyword, __FUNC);
   t.nextToken(); // function
   _type();
   require(TT_Identifier);
-  t.tokenString();
+  a.AddRoot(NT_Identifier, t.tokenString()); // function name
   t.nextToken();
   require(TT_Literal, __LBRACK);
   t.nextToken();
-  _arguments();
+  _arguments();  
   require(TT_Literal, __RBRACK);
+  a.CloseRoot();
   t.nextToken();
   _declarations();
   require(TT_Identifier, __BEGIN);
@@ -140,18 +145,21 @@ function _function()
   _statements();
   require(TT_Identifier, __END);
   t.nextToken();
+  a.CloseRoot();
 }
 
 function _arguments()
 {
   while (!has(TT_Literal, __RBRACK))
   {
+    a.AddRoot(NT_Keyword, __VAR);
     _type();
     require(TT_Identifier);
-    // did
+    a.AddChild(NT_Identifier, t.tokenString());
     t.nextToken();
-    require(TT_Literal, __SEMICOLON);
-    t.nextToken();
+    a.CloseRoot();
+    if (has(TT_Literal, __SEMICOLON)) t.nextToken();
+    else break;
   }
 }
 
@@ -244,7 +252,7 @@ function _boolex()
 {  
   _accum();
   while (has(TT_Operator, __LT)||has(TT_Operator, __LE)||has(TT_Operator, __GT)||has(TT_Operator, __GE)||
-    has(TT_Operator, __EQ)||has(TT_Operator, __NE))
+    has(TT_Operator, __EQ)||has(TT_Operator, __NE)||has(TT_Operator, __AND)||has(TT_Operator, __OR))
   {
     a.AddRoot(NT_Keyword, t.tokenString());
     a.SwitchNode();
@@ -270,7 +278,7 @@ function _accum()
 function _mult()
 {
   _preop();
-  while (has(TT_Operator, __MULTIPLY)||has(TT_Operator, __DIVIDE))
+  while (has(TT_Operator, __MULTIPLY)||has(TT_Operator, __DIVIDE)||has(TT_Operator, __MOD))
   {
     a.AddRoot(NT_Keyword, t.tokenString());
     a.SwitchNode();
